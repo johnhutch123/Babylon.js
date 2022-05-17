@@ -1,0 +1,57 @@
+ var createScene = function () {
+            // This creates a basic Babylon Scene object (non-mesh)
+            var scene = new BABYLON.Scene(engine);
+
+            var camera = new BABYLON.ArcRotateCamera("camera", BABYLON.Tools.ToRadians(90), BABYLON.Tools.ToRadians(65), 10, BABYLON.Vector3.Zero(), scene);
+
+            // This targets the camera to scene origin
+            //camera.setTarget(BABYLON.Vector3.Zero());
+
+            // This attaches the camera to the canvas
+            camera.attachControl(canvas, true);
+
+            // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+            var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+
+            // Default intensity is 1. Let's dim the light a small amount
+            light.intensity = 0.7;
+
+            // Imports a basic cube
+            //BABYLON.SceneLoader.ImportMesh("","https://raw.githubusercontent.com/johnhutch123/Babylon.js/d670f5c752744ba8395800895e81347f888ead8b/","cube.stl",scene, function (scene) {
+            // do something with the scene
+            //});
+
+            // Imports the degrowth sculpture
+            BABYLON.SceneLoader.ImportMesh("","https://raw.githubusercontent.com/johnhutch123/Babylon.js/d486c883693c2df8a9f931363f1840642a73fd62/","degrowth.stl",scene, function (newMeshes) {
+            // Set the target of the camera to the first imported mesh
+            var mesh1 = newMeshes[0]
+
+            // show the bounding box
+            //mesh1.showBoundingBox = true;
+
+            // Calculate the centre of the bounding box
+            let mesh1Min = mesh1.getBoundingInfo().boundingBox.minimum;
+            let mesh1Max = mesh1.getBoundingInfo().boundingBox.maximum;
+
+            var mesh1Cent = ((mesh1Max.subtract(mesh1Min)).scale(0.5)).add(mesh1Min) // this might be wrong...
+
+            //Set camera to centre of bounding box
+            camera.target = mesh1Cent;
+
+            // Poisition the camera to look at the object.
+            camera.setPosition(new BABYLON.Vector3(20, 20, 5));
+
+            });
+            
+            
+
+
+            // Move the light with the camera
+            scene.registerBeforeRender(function () {
+            light.position = camera.position;
+            });
+
+            //scene.debugLayer.show()
+
+            return scene;
+        };
