@@ -21,16 +21,121 @@
             }
         </style>
 
-	<script src="https://cdn.babylonjs.com/viewer/babylon.viewer.js"></script>
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="Babylon.js"></script>
+        <script src="babylon.stlFileLoader.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
         <script src="https://code.jquery.com/pep/0.4.3/pep.js"></script>
     </head>
 
    <body>
-	   
-	<div class= "cell babylon">
-	<babylon model="scene.babylon"></babylon>
-	<div>
-		
+
+	<canvas id="renderCanvas" touch-action="none"></canvas> <!-- touch-action="none" for best results from PEP -->
+
+	<script>
+        const canvas = document.getElementById("renderCanvas"); // Get the canvas element
+        const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
+        // Add your code here matching the playground format
+        var createScene = function () {
+    // This creates a basic Babylon Scene object (non-mesh)
+    var scene = new BABYLON.Scene(engine);
+    scene.clearColor = new BABYLON.Color3(0.29, 0.29, 0.43)
+    var camera = new BABYLON.ArcRotateCamera("camera", BABYLON.Tools.ToRadians(90), BABYLON.Tools.ToRadians(65), 10, BABYLON.Vector3.Zero(), scene);
+
+
+    // This attaches the camera to the canvas
+    camera.attachControl(canvas, true);
+
+    // Create the lights
+    //var whiteLight = new BABYLON.PointLight("whiteLight", new BABYLON.Vector3(2, 1, 2), scene);
+    //var redLight = new BABYLON.PointLight("redLight", new BABYLON.Vector3(-2, 0, -2), scene);
+    
+    var light = new BABYLON.DirectionalLight("dir01", new BABYLON.Vector3(-1, -1, 1), scene);
+    var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);
+    light.parent = camera;
+    light.position = new BABYLON.Vector3(40, 40, 40);
+    var light2 = new BABYLON.HemisphericLight("light2",new BABYLON.Vector3(-40,20,40), scene)
+    
+    //var lightSphere = BABYLON.Mesh.CreateSphere("sphere", 10, 5, scene);
+    //lightSphere.position = light.position;
+    //lightSphere.material = new BABYLON.StandardMaterial("light", scene);
+    //lightSphere.material.emissiveColor = new BABYLON.Color3(1, 1, 0);
+
+    // Default intensity is 1. Let's dim the light a small amount
+    light.intensity = 3.5;
+    light2.intensity = 2;
+    //redLight.intensity = 5000;
+    light2.diffuse = new BABYLON.Color3(1, 0, 0);
+
+    //enable shadows
+
+
+    // Create the material
+    var material1 = new BABYLON.PBRMaterial("material1", scene);
+    material1.albedoColor = new BABYLON.Color3(1, 0.72, 1);
+    material1.metallic = 0.0;
+    material1.roughness = 0.7;
+    material1.subSurface.Color3 = new BABYLON.Color3(1, 0, 0);
+    //material1.subSurface.maximumThickness = 0.01;
+    material1.subSurface.isScatteringEnabled = true;
+
+    // Set up the post process rendering pipeline.
+    var standardPipeline = new BABYLON.PostProcessRenderPipeline(engine, "standardPipeline");
+
+    // Configure lens effects
+    var lensEffect = new BABYLON.LensRenderingPipeline('lens', {
+        chromatic_aberration: 1.0,
+        grain_amount: 5.0,
+    }, scene, 1.0, camera);
+
+    // Imports the degrowth sculpture
+    BABYLON.SceneLoader.ImportMesh("","https://raw.githubusercontent.com/johnhutch123/Babylon.js/d486c883693c2df8a9f931363f1840642a73fd62/","degrowth.stl",scene, function (newMeshes) {
+    
+    // Set the target of the camera to the first imported mesh
+    var mesh1 = newMeshes[0]
+
+    // Calculate the centre of the bounding box
+    let mesh1Min = mesh1.getBoundingInfo().boundingBox.minimum;
+    let mesh1Max = mesh1.getBoundingInfo().boundingBox.maximum;
+
+    var mesh1Cent = ((mesh1Max.subtract(mesh1Min)).scale(0.5)).add(mesh1Min) // this might be wrong...
+
+    //Set camera to centre of bounding box
+    camera.target = mesh1Cent;
+
+    // Poisition the camera to look at the object.
+    camera.setPosition(new BABYLON.Vector3(20, 20, 5));
+
+    // Assign a material
+    
+    mesh1.material = material1
+
+    mesh1.receiveShadows = true;
+
+    })
+
+    return scene;
+    
+    };
+
+        const scene = createScene(); //Call the createScene function
+
+        // Register a render loop to repeatedly render the scene
+        engine.runRenderLoop(function () {
+                scene.render();
+        });
+
+        // Watch for browser/canvas resize events
+        window.addEventListener("resize", function () {
+                engine.resize();
+        });
+	</script>
+
    </body>
 
 </html>
+
+https://github.com/johnhutch123/Babylon.js/blob/d670f5c752744ba8395800895e81347f888ead8b/cube.stl
+
+https://raw.githubusercontent.com/johnhutch123/Babylon.js/d670f5c752744ba8395800895e81347f888ead8b/cube.stl
